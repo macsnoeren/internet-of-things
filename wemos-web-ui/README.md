@@ -73,6 +73,8 @@ void setupWifiManager () {
   //wifiManager.resetSettings(); // When you need to reset the Wifi settings.
   
   wifiManager.autoConnect();  // Auto generated name ESP + ChipID
+
+  Serial.println("Connected with Wi-Fi!");
 }
 
 // Setup of the web server ESP8266WebServer
@@ -86,24 +88,34 @@ void setupWebServer () {
   // when the document is loaded. See the script tag.
   server->on("/", []() {
     server->send(200, "text/html",
-    "<!DOCTYPE html lang=\"en\">"
-    "<html>"
-    "<head>"
-    "<meta charset=\"utf-8\">"
-    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
-    "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css\" integrity=\"sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk\" crossorigin=\"anonymous\">"
-    "<script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>"
-    "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>"
-    "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>"
-    "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js\" integrity=\"sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI\" crossorigin=\"anonymous\"></script>"
-    "<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); }); });</script>"
-    "<title>Wemos great web interface demo</title>"
-    "</head>"
-    "<body>"
-    "<div id=\"page\">Loading your great web user interface, please wait ...</div>"
-    "</body>"
-    "</html>");
-  });
+		 "<!DOCTYPE html lang=\"en\">"
+		 "<html>"
+		 "<head>"
+		 "<meta charset=\"utf-8\">"
+		 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
+		 "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css\" integrity=\"sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk\" crossorigin=\"anonymous\">"
+		 "<script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>"
+		 "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>"
+		 "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>"
+		 "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js\" integrity=\"sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI\" crossorigin=\"anonymous\"></script>"
+		 "<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); }); });</script>"
+		 "<title>Wemos great web interface demo</title>"
+		 "</head>"
+		 "<body>"
+		 "<div id=\"page\">Loading your great web user interface, please wait ...</div>"
+		 "</body>"
+		 "</html>");
+    });
+
+  // When the website want to have some Wemos action, it can do this using the /action page
+  // Get parameters of the request to perform the required action of the user.
+  // This method is an example to do this
+  server->on("/action", []() {
+
+
+      
+      server->send(200, "text/plain", "create some action here...");
+    });
 
   // Handle resources that are not found.
   server->onNotFound(handleNotFound);
@@ -121,14 +133,12 @@ void setup() {
   Serial.begin(115200);
 
   setupWifiManager();
-  Serial.println("connected...yeey :)");
-
   setupWebServer();
 }
 
 // Method that is continously called!
 void loop() {
-  server->handleClient();
+  server->handleClient(); // Handling the web requests
 }
 ```
 
