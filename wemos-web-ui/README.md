@@ -43,8 +43,8 @@ Just to check that it works, we will create a ```demo.html``` file within the /w
 ```html
 <h1>CONTROL YOUR LIGHTS</h1>
 <div class="custom-control custom-switch">
- <input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch">
- <label class="light-1-label" for="light-1-switch">Toggle the light</label>
+  <input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch">
+  <label class="light-1-label" for="light-1-switch">Toggle the light</label>
 </div>
 ```
 
@@ -54,79 +54,39 @@ On the Wemos we need to start the great web user interface with a minimal footpr
 While the Wemos required an Internet connection, we will also use WifiManager to create a portal functionality to enable the user to setup the Wifi credentials in an easy way. When the Wemos is connected, it provides a webserver that can be connected to from the network of the user. Everything is developed using Ardiuno IDE and the extention of the Wemos. See the code of the Wemos below:
 
 ```c
-
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-//needed for library
+#include <ESP8266WiFi.h> //https://github.com/esp8266/Arduino
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include "WiFiManager.h"         //https://github.com/tzapu/WiFiManager
+#include "WiFiManager.h" //https://github.com/tzapu/WiFiManager
 
+// Web server instance that processes the web requests
 std::unique_ptr<ESP8266WebServer> server;
-WiFiClient client;
 
-void handleRoot() {
-  server->send(200, "text/plain", "WeMoS Test");
-}
-
+// Callback method for the ESP8266 web server to handle when the resource is not found
 void handleNotFound() {
-  //server->send(200, "text/plain", "File not found.");
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += server->uri();
-  message += "\nMethod: ";
-  message += (server->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server->args();
-  message += "\n";
-  for (uint8_t i = 0; i < server->args(); i++) {
-    message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
-  }
-  server->send(404, "text/plain", message);
+  server->send(404, "text/plain", "File not found");
 }
 
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  
-  
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  //Serial.setDebugOutput(true);
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
+// Setup of the WifiManager
+void setupWifiManager () {
   WiFiManager wifiManager;
-  //reset saved settings
-  //wifiManager.resetSettings();
-
-  //fetches ssid and pass from eeprom and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
-  //and goes into a blocking loop awaiting configuration
-  //wifiManager.autoConnect("AutoConnectAP");
-  //or use this for auto generated name ESP + ChipID
-  wifiManager.autoConnect();
-
-
-  //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
+  //wifiManager.resetSettings(); // When you need to reset the Wifi settings.
   
-  server.reset(new ESP8266WebServer(WiFi.localIP(), 80));
+  wifiManager.autoConnect();  // Auto generated name ESP + ChipID
+}
 
-  server->on("/", handleRoot);
+// Setup of the web server ESP8266WebServer
+void setupWebServer () {
+  server->reset(new ESP8266WebServer(WiFi.localIP(), 80));
 
-  server->on("/inline.html", []() {
-    server->send(200, "text/html", 
-    "<html>"
-     "<head>"
-      "<title>wemos</title>"
-     "</head>"
-     "<body><p style=\"background: #ABB\">Hier ben ik!</p></body>"
-    "</html>");
-  });
-
-  server->on("/test", []() {
+  // Handle the root of the web server => return spin-off website here!
+  // Load scripts and css to be used in the header, like bootstrap and jquery.
+  // For cyber security purposes, use the integrity checker of the browser.
+  // Load the external documents from the external web server by using a ajax call (using demo.html).
+  // when the document is loaded. See the script tag.
+  server->on("/", []() {
     server->send(200, "text/html",
-    "<!DOCTYPE html>"
+    "<!DOCTYPE html lang=\"en\">"
     "<html>"
     "<head>"
     "<meta charset=\"utf-8\">"
@@ -136,82 +96,41 @@ void setup() {
     "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>"
     "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>"
     "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js\" integrity=\"sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI\" crossorigin=\"anonymous\"></script>"
-    "<script>function load() { alert(\"test\"); ajax({ url: \"https://vmacman.jmnl.nl/wemos/page.html\", data: { zipcode: 97201 }, success: function( result ) { $(\"#page\").html(result); } });}</script>"
-    //"<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"http://192.168.1.62\"); }); });</script>"
-    "<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/wemos.html\"); }); });</script>"
-    "<title>WeMoS Test</title>"
+    "<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); }); });</script>"
+    "<title>Wemos great web interface demo</title>"
     "</head>"
-    "<body onload=\"load()\">"
-    "<h2>HTML Forms</h2>"
-    "<form action=\"/testing\" method=\"post\">"
-    "<label for=\"fname\">First name:</label><br>"
-    "<input type=\"text\" id=\"fname\" name=\"fname\" value=\"John\"><br>"
-    "<label for=\"lname\">Last name:</label><br>"
-    "<input type=\"text\" id=\"lname\" name=\"lname\" value=\"Doe\"><br><br>"
-    "<div class=\"custom-control custom-switch\"><input name=\"switch\" type=\"checkbox\" class=\"custom-control-input\" id=\"customSwitch1\"><label class=\"custom-control-label\" for=\"customSwitch1\">Toggle this switch element</label></div>"
-    "<input type=\"submit\" value=\"Submit\">"
-    "<div id=\"page\">Loading page...</div>"
-    "</form>"
-    "<button>Get External Content</button>"
+    "<body>"
+    "<div id=\"page\">Loading your great web user interface, please wait ...</div>"
     "</body>"
     "</html>");
   });
 
+  // Handle resources that are not found.
   server->onNotFound(handleNotFound);
-
   server->begin();
-  Serial.println("HTTP server started");
+  
+  Serial.println("HTTP server started.");
   Serial.println(WiFi.localIP());
-
-  sendToServer(WiFi.localIP().toString().c_str());
 }
 
-void sendToServer (const char* text) {
-   if (client.connect("vmacman.jmnl.nl", 11111)) {
-    // This will send a string to the server
-    Serial.println("sending data to server");
-    if (client.connected()) {
-      client.println(text);
-    }
-  
-    // wait for data to be available
-    unsigned long timeout = millis();
-    while (client.available() == 0) {
-      if (millis() - timeout > 5000) {
-        Serial.println(">>> Client Timeout !");
-        client.stop();
-        delay(60000);
-        return;
-      }
-    }
-  
-    // Read all the lines of the reply from server and print them to Serial
-    Serial.println("receiving from remote server");
-    // not testing 'client.connected()' since we do not need to send data here
-    while (client.available()) {
-      char ch = static_cast<char>(client.read());
-      Serial.print(ch);
-    }
-  
-    // Close the connection
-    Serial.println();
-    Serial.println("closing connection");
-    client.stop();
+// Setup method that is called only once
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
 
-  } else {
-    Serial.println("connection failed");
-    delay(5000);
-    return;
-  }
+  // Serial debugging
+  Serial.begin(115200);
+
+  setupWifiManager();
+  Serial.println("connected...yeey :)");
+
+  setupWebServer();
 }
 
+// Method that is continously called!
 void loop() {
   server->handleClient();
 }
-
-
 ```
-
 
 # Ideas that popped up during the development process
 Always write down you idea!
