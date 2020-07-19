@@ -43,8 +43,20 @@ Just to check that it works, we will create a ```demo.html``` file within the /w
 ```html
 <h1>CONTROL YOUR LIGHTS</h1>
 <div class="custom-control custom-switch">
-  <input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch">
-  <label class="light-1-label" for="light-1-switch">Toggle the light</label>
+ <input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch">
+ <label class="custom-control-label" for="light-1-switch">Toggle light 1</label>
+</div>
+<div class="custom-control custom-switch">
+ <input name="light-2" type="checkbox" class="custom-control-input" id="light-2-switch">
+ <label class="custom-control-label" for="light-2-switch">Toggle light 2</label>
+</div>
+<div class="custom-control custom-switch">
+ <input name="light-3" type="checkbox" class="custom-control-input" id="light-3-switch">
+ <label class="custom-control-label" for="light-3-switch">Toggle light 3</label>
+</div>
+<div class="custom-control custom-switch">
+ <input name="light-4" type="checkbox" class="custom-control-input" id="light-4-switch">
+ <label class="custom-control-label" for="light-4-switch">Toggle light 4</label>
 </div>
 ```
 
@@ -98,7 +110,7 @@ void setupWebServer () {
 		 "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>"
 		 "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>"
 		 "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js\" integrity=\"sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI\" crossorigin=\"anonymous\"></script>"
-		 "<script>$(document).ready(function(){  $(\"button\").click(function(){ $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); }); });</script>"
+		 "<script>$(document).ready(function(){  $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); });</script>"
 		 "<title>Wemos great web interface demo</title>"
 		 "</head>"
 		 "<body>"
@@ -107,14 +119,22 @@ void setupWebServer () {
 		 "</html>");
     });
 
-  // When the website want to have some Wemos action, it can do this using the /action page
-  // Get parameters of the request to perform the required action of the user.
-  // This method is an example to do this
-  server->on("/action", []() {
-
-
-      
-      server->send(200, "text/plain", "create some action here...");
+    // When the website want to have some Wemos action, it can do this using the /action page
+    // Get parameters of the request to perform the required action of the user.
+    // This method is an example to do this
+    server->on("/action", []() {
+        String message = "Create some action here...\n\n";
+        message += "URI: ";
+        message += server->uri();
+        message += "\nMethod: ";
+        message += (server->method() == HTTP_GET) ? "GET" : "POST";
+        message += "\nArguments: ";
+        message += server->args();
+        message += "\n";
+        for (uint8_t i = 0; i < server->args(); i++) {
+            message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
+        }
+        server->send(200, "text/plain", message);
     });
 
   // Handle resources that are not found.
@@ -141,6 +161,9 @@ void loop() {
   server->handleClient(); // Handling the web requests
 }
 ```
+
+## Step 3: Interfacing with Wemos
+
 
 # Ideas that popped up during the development process
 Always write down you idea!
