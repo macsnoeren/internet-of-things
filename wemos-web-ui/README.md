@@ -162,6 +162,8 @@ void loop() {
 }
 ```
 
+When you program the Wemos at this moment, it searched for a Wi-Fi connection. If no Wi-Fi is found, you connect to the AP and setup the Wi-Fi connections. Finally, it will start-up and connect to your Wi-Fi AP and spin-up the web server. Loading the internet page in your favorite browsers shows already an web interface that contains more information than initially programmed into the memory of the Wemos!
+
 ## Step 3: Interfacing with Wemos
 
 
