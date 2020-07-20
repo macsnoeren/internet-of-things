@@ -1,0 +1,36 @@
+<!-- A file that uses minimal footprint and eveything can be loaded later! -->
+<html>
+<head>
+    <!--<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>-->
+    <!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />-->
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <!--<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
+
+    <script>
+    $( document ).ready(function() {
+        console.log( "document loaded" );
+    });
+ 
+    $( window ).on( "load", function() {
+        console.log( "window loaded" );
+    });
+    </script>
+</head>
+<body>
+<script>
+$('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
+$.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
+    console.log( data ); // Data returned
+    console.log( textStatus ); // Success
+    console.log( jqxhr.status ); // 200
+    console.log( "Load was performed." );
+});
+</script>
+
+<h1>sefsfd</h1>
+<form>
+        <label for="flip-checkbox-1">Flip toggle switch checkbox:</label>
+        <input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+    </form>
+</body>
+</html>
