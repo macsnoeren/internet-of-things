@@ -67,10 +67,28 @@ void setupWebServer () {
         message += "\nArguments: ";
         message += server->args();
         message += "\n";
+        int lightId = 0;
+        boolean value = 0;
         for (uint8_t i = 0; i < server->args(); i++) {
             message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
+            if ( server->argName(i) == "light" ) {
+              lightId = server->arg(i).toInt();
+            }
+            if ( server->argName(i) == "value" ) {
+              value = (server->arg(i) == "on" ? true : false);
+            }
         }
         server->send(200, "text/plain", message);
+
+        if ( lightId == 1 ) {
+          if ( value ) {
+            digitalWrite(LED_BUILTIN, LOW);
+            
+          } else {
+            digitalWrite(LED_BUILTIN, HIGH);
+          }
+        }
+                
     });
 
   // Handle resources that are not found.

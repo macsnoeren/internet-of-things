@@ -1,0 +1,31 @@
+
+<!-- embed script to implement the required functionality -->
+<script>
+function toggleLight(id, element) {
+    //alert("Light: " + id + ": " + element.checked);
+    //element.checked = true;
+    $('#action').load("http://192.168.1.62/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
+}
+</script>
+
+<h1>CONTROL YOUR LIGHTS</h1>
+<div class="custom-control custom-switch">
+<input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch" onchange="toggleLight(1, this);">
+<label class="custom-control-label" for="light-1-switch">Toggle light 1</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-2" type="checkbox" class="custom-control-input" id="light-2-switch" onchange="toggleLight(2, this);">
+<label class="custom-control-label" for="light-2-switch">Toggle light 2</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-3" type="checkbox" class="custom-control-input" id="light-3-switch" onchange="toggleLight(3, this);">
+<label class="custom-control-label" for="light-3-switch">Toggle light 3</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-4" type="checkbox" class="custom-control-input" id="light-4-switch" onchange="toggleLight(4, this);">
+<label class="custom-control-label" for="light-4-switch">Toggle light 4</label>
+</div>
+<br/>
+<h1>Reaction from Wemos:</h1>
+<div id="action">Action...</div>
+  
