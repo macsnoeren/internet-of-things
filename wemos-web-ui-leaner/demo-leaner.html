@@ -30,7 +30,28 @@ $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", f
     <h1>INTERFACE</h1>
 </div>
 
+<h1>CONTROL YOUR LIGHTS</h1>
+<div class="custom-control custom-switch">
+    <input type="checkbox" data-role="flipswitch" name="light-1" id="light-1-switch" onchange="toggleLight(1, this);">
+    <label for="light-1-switch">Flip toggle switch checkbox:</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-2" type="checkbox" class="custom-control-input" id="light-2-switch" onchange="toggleLight(2, this);">
+<label class="custom-control-label" for="light-2-switch">Toggle light 2</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-3" type="checkbox" class="custom-control-input" id="light-3-switch" onchange="toggleLight(3, this);">
+<label class="custom-control-label" for="light-3-switch">Toggle light 3</label>
+</div>
+<div class="custom-control custom-switch">
+<input name="light-4" type="checkbox" class="custom-control-input" id="light-4-switch" onchange="toggleLight(4, this);">
+<label class="custom-control-label" for="light-4-switch">Toggle light 4</label>
+</div>
+<br/>
+<h1>Reaction from Wemos:</h1>
+<div id="action">Action...</div>
+
 <form>
-    <label for="flip-checkbox-1">Flip toggle switch checkbox:</label>
     <input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+    <label for="flip-checkbox-1">Flip toggle switch checkbox:</label>
 </form>
