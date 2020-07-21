@@ -2,6 +2,8 @@
     $('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
     
     document.title = 'Garden Controller Interface';
+    
+    $('#ip').html(ip);
 
     $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
         console.log( data ); // Data returned
@@ -65,5 +67,5 @@
 
 <br/>
 
-<h1>Reaction from Wemos:</h1>
+<h1>Reaction from Wemos (<span id="ip"></span>):</h1>
 <div id="action">Action...</div>

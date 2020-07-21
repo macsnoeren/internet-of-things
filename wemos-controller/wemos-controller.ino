@@ -81,9 +81,11 @@ void setupWebServer () {
         if ( lightId == 1 ) {
           if ( value ) {
             digitalWrite(LED_BUILTIN, LOW);
+            digitalWrite(D1, HIGH);
             
           } else {
             digitalWrite(LED_BUILTIN, HIGH);
+            digitalWrite(D1, LOW);
           }
         }
                 
@@ -101,6 +103,7 @@ void setupWebServer () {
 // Setup method that is called only once
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(D1, OUTPUT);
 
   // Serial debugging
   Serial.begin(115200);
