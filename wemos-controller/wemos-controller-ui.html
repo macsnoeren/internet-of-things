@@ -2,7 +2,7 @@
     $('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
     
     document.title = 'Garden Controller Interface';
-    
+
     $('#ip').html(ip);
 
     $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
@@ -13,9 +13,7 @@
     });
 
     function toggleLight(id, element) {
-        //alert("Light: " + id + ": " + element.checked);
-        //element.checked = true;
-        $('#action').load("http://192.168.1.62/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
+        $('#action').load("http://" + ip + "/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
     }
 </script>
 
