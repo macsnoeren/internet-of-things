@@ -1,12 +1,20 @@
 <script>
-$('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
-document.title = 'Wemos - Leaner Web Interface';
-$.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
-    console.log( data ); // Data returned
-    console.log( textStatus ); // Success
-    console.log( jqxhr.status ); // 200
-    console.log( "Load was performed." );
-});
+    $('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
+    
+    document.title = 'Wemos - Leaner Web Interface';
+
+    $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
+        console.log( data ); // Data returned
+        console.log( textStatus ); // Success
+        console.log( jqxhr.status ); // 200
+        console.log( "Load was performed." );
+    });
+
+    function toggleLight(id, element) {
+        //alert("Light: " + id + ": " + element.checked);
+        //element.checked = true;
+        $('#action').load("http://192.168.1.62/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
+    }
 </script>
 
 <fieldset class="ui-grid-a">
@@ -36,22 +44,19 @@ $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", f
     <label for="light-1-switch">Flip toggle switch checkbox:</label>
 </div>
 <div class="custom-control custom-switch">
-<input name="light-2" type="checkbox" class="custom-control-input" id="light-2-switch" onchange="toggleLight(2, this);">
-<label class="custom-control-label" for="light-2-switch">Toggle light 2</label>
+    <input type="checkbox" data-role="flipswitch" name="light-2" id="light-2-switch" onchange="toggleLight(2, this);">
+    <label for="light-2-switch">Flip toggle switch checkbox:</label>
 </div>
 <div class="custom-control custom-switch">
-<input name="light-3" type="checkbox" class="custom-control-input" id="light-3-switch" onchange="toggleLight(3, this);">
-<label class="custom-control-label" for="light-3-switch">Toggle light 3</label>
+    <input type="checkbox" data-role="flipswitch" name="light-3" id="light-3-switch" onchange="toggleLight(3, this);">
+    <label for="light-3-switch">Flip toggle switch checkbox:</label>
 </div>
 <div class="custom-control custom-switch">
-<input name="light-4" type="checkbox" class="custom-control-input" id="light-4-switch" onchange="toggleLight(4, this);">
-<label class="custom-control-label" for="light-4-switch">Toggle light 4</label>
+    <input type="checkbox" data-role="flipswitch" name="light-4" id="light-4-switch" onchange="toggleLight(4, this);">
+    <label for="light-4-switch">Flip toggle switch checkbox:</label>
 </div>
+
 <br/>
+
 <h1>Reaction from Wemos:</h1>
 <div id="action">Action...</div>
-
-<form>
-    <input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
-    <label for="flip-checkbox-1">Flip toggle switch checkbox:</label>
-</form>
