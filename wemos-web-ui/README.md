@@ -165,7 +165,89 @@ void loop() {
 When you program the Wemos at this moment, it searched for a Wi-Fi connection. If no Wi-Fi is found, you connect to the AP and setup the Wi-Fi connections. Finally, it will start-up and connect to your Wi-Fi AP and spin-up the web server. Loading the internet page in your favorite browsers shows already an web interface that contains more information than initially programmed into the memory of the Wemos!
 
 ## Step 3: Interfacing with Wemos
+While having a great web interface, we still need to interface with the Wemos. Internet-of-things is about connecting the physical world to the cyber world. In order to do so, we need to extent the current ```demo.html``` and ```wemos-web-ui.ino``` files to create some action. Both applications (HTML and Wemos) require to know the IP address of the device in order to work.
 
+### Step 3.1: Extend the Wemos application
+We need to extent the spin-off website, so the website has knowledge about the Ip address the Wemos is connected to. Within the method setupWebServer I have added some code to the server handling of the ```/action``` directory. A light, using the id ```lightId``` can be used to indicate which light you want to toggle. The status of the light is send using the variable ```value``` that can be ```on``` or ```off```. The following code will switch on and off the builtin led when ```lightId``` is equal to one.
+```c
+server->on("/action", []() {
+    int lightId = 0;
+    boolean value = 0;
+    for (uint8_t i = 0; i < server->args(); i++) {
+        if ( server->argName(i) == "light" ) {
+            lightId = server->arg(i).toInt();
+        }
+
+        if ( server->argName(i) == "value" ) {
+            value = (server->arg(i) == "on" ? true : false);
+        }
+    }
+
+    if ( lightId == 1 ) {
+        if ( value ) {
+        digitalWrite(LED_BUILTIN, LOW);
+        
+        } else {
+        digitalWrite(LED_BUILTIN, HIGH);
+        }
+    }
+    server->send(200, "text/plain", "ack");            
+});
+```
+
+Within the same method, we add information to the root handling. The IP address of the device is added in this case (```var ip = \"" + WiFi.localIP().toString() + "\"; ```). Within the other scripts the variable ```ip``` can be used to redirect to the local IP address of the Wemos.
+
+```c
+"<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); });</script>"
+```
+
+You can find the example of this file in the repo: ```wemos-web-ui.ino```.
+
+### Step 3.2: Creating a new demo file
+Creating a new demo file ```demo-action.html``` that is hosted by our web server. We add some scripting and a ```div``` element that displays the information that comes from the Wemos. The following code is used to create the demo-action.html:
+```html
+<script>
+$('#ip').html(ip);
+function toggleLight(id, element) {
+    $('#action').load("http://" + ip + "/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
+}
+</script>
+
+<h1>CONTROL YOUR LIGHTS</h1>
+<div class="custom-control custom-switch">
+  <input name="light-1" type="checkbox" class="custom-control-input" id="light-1-switch" onchange="toggleLight(1, this);">
+  <label class="custom-control-label" for="light-1-switch">Toggle light 1</label>
+</div>
+<div class="custom-control custom-switch">
+  <input name="light-2" type="checkbox" class="custom-control-input" id="light-2-switch" onchange="toggleLight(2, this);">
+  <label class="custom-control-label" for="light-2-switch">Toggle light 2</label>
+</div>
+<div class="custom-control custom-switch">
+  <input name="light-3" type="checkbox" class="custom-control-input" id="light-3-switch" onchange="toggleLight(3, this);">
+  <label class="custom-control-label" for="light-3-switch">Toggle light 3</label>
+</div>
+<div class="custom-control custom-switch">
+  <input name="light-4" type="checkbox" class="custom-control-input" id="light-4-switch" onchange="toggleLight(4, this);">
+  <label class="custom-control-label" for="light-4-switch">Toggle light 4</label>
+</div>
+<br/>
+<h1>Reaction from Wemos <span id="ip"></span></h1>
+<div id="action">Action...</div>
+```
+
+When you browse to your Wemos page, you can toggle the lights. If you toggle light 1 you should see the blue led on the Wemos is going on and off. You have successfully implemented some action!
+
+# Without a web server?
+Yes, that is possible. Of course you need a web server, but you do not need your own web server. You can use github.com as well. Maybe it is a better option, while the Wemos will alway load the most recent version. If you would like to use the github version, you can load the raw file. You can find the link to this file on github. In my case, I have used the development version link: ```https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui/demo-action.html```. If you change the spin-off code of the Wemos, you do not require any own web server.
+
+```c
+"<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui/demo-action.html\"); });</script>"
+```
+
+And does it work?
+
+# A great web user interface
+What is a great web user interface? Anyway, I show you what I mean by a great web user interface for the Wemos. It is nice that you only need to browse to your Wemos web server and that the Wemos eventually uses the Internet to create a nice big web interface that suits all the needs of the users. This demo can be found in the repo: ```demo-great.html```. Off course you can create much better and greater web user interface. However, the basis to do so is given by this example!
 
 # Ideas that popped up during the development process
 Always write down you idea!

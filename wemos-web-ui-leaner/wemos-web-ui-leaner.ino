@@ -10,7 +10,7 @@
 // Web server instance that processes the web requests
 std::unique_ptr<ESP8266WebServer> server;
 int count = 0;
-String greatWebInterface = ""
+String greatWebInterface = "https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui-leaner/demo-leaner.html";
 
 // Callback method for the ESP8266 web server to handle when the resource is not found
 void handleNotFound() {
@@ -45,7 +45,7 @@ void setupWebServer () {
 		 "<meta charset=\"utf-8\">"
 		 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
 		 "<script src=\"http://code.jquery.com/jquery-1.11.1.min.js\"></script>"
-		 "<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui/demo-action.html\"); });</script>"
+		 "<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"" + greatWebInterface + "\"); });</script>"
 		 "</head>"
 		 "<body>\n"
 		 "<div id=\"page\">Loading your great web user interface, please wait ...</div>\n"
@@ -91,6 +91,7 @@ void setupWebServer () {
 
   // Handle resources that are not found.
   server->onNotFound(handleNotFound);
+  
   server->begin();
   
   Serial.println("HTTP server started.");

@@ -9,6 +9,7 @@
 
 // Web server instance that processes the web requests
 std::unique_ptr<ESP8266WebServer> server;
+int count = 0;
 
 // Callback method for the ESP8266 web server to handle when the resource is not found
 void handleNotFound() {
@@ -34,6 +35,7 @@ void setupWebServer () {
   // For cyber security purposes, use the integrity checker of the browser.
   // Load the external documents from the external web server by using a ajax call (using demo.html).
   // when the document is loaded. See the script tag.
+  //"<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); });</script>"
   server->on("/", []() {
     server->send(200, "text/html",
 		 "<!DOCTYPE html lang=\"en\">"
@@ -46,7 +48,7 @@ void setupWebServer () {
 		 "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>"
 		 "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>"
 		 "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js\" integrity=\"sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI\" crossorigin=\"anonymous\"></script>"
-		 "<script>$(document).ready(function(){  $(\"#page\").load(\"https://vmacman.jmnl.nl/wemos/demo.html\"); });</script>"
+		 "<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui/demo-action.html\"); });</script>"    
 		 "<title>Wemos great web interface demo</title>"
 		 "</head>"
 		 "<body>"
@@ -112,5 +114,19 @@ void setup() {
 
 // Method that is continously called!
 void loop() {
-  server->handleClient(); // Handling the web requests
+  if ( WiFi.status() == WL_CONNECTED ) {
+    server->handleClient(); // Handling the web requests
+
+  } else {
+    Serial.println("Lost connection with AP");
+    delay(2000);
+  }
+
+  if ( count++ > 10 ) {
+    count = 0;
+    Serial.println("Heart beat!");
+    Serial.println(WiFi.status());
+  }
+
+  delay(100);
 }
