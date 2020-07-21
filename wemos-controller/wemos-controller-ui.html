@@ -1,7 +1,7 @@
 <script>
     $('head').append('<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" type="text/css" />');
     
-    document.title = 'Wemos - Leaner Web Interface';
+    document.title = 'Garden Controller Interface';
 
     $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
         console.log( data ); // Data returned
@@ -35,7 +35,14 @@
 </fieldset>
 
 <div data-role="header">
-    <h1>INTERFACE</h1>
+    <h1>GARDEN INTERFACE</h1>
+</div>
+
+<h1>CONTROL THE POWER</h1>
+
+<div class="custom-control custom-switch">
+    <input type="checkbox" data-role="flipswitch" name="power-1" id="power-1-switch" onchange="toggleLight(1, this);">
+    <label for="power-1-switch">Flip toggle switch checkbox:</label>
 </div>
 
 <h1>CONTROL YOUR LIGHTS</h1>

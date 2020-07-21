@@ -10,7 +10,7 @@
 // Web server instance that processes the web requests
 std::unique_ptr<ESP8266WebServer> server;
 int count = 0;
-String greatWebInterface = "https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-web-ui-leaner/demo-leaner.html";
+String greatWebInterface = "https://raw.githubusercontent.com/macsnoeren/internet-of-things/master/wemos-controller/wemos-controller-ui.html";
 
 // Callback method for the ESP8266 web server to handle when the resource is not found
 void handleNotFound() {
