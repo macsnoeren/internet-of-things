@@ -10,7 +10,9 @@
 // Web server instance that processes the web requests
 std::unique_ptr<ESP8266WebServer> server;
 int count = 0;
-String greatWebInterface = "https://raw.githubusercontent.com/macsnoeren/internet-of-things/master/wemos-controller/wemos-controller-ui.html";
+
+// This file is loaded into the Wemos webpage!
+String greatWebInterface = "https://raw.githubusercontent.com/macsnoeren/internet-of-things/development/wemos-controller/wemos-controller-ui.html";
 
 // Callback method for the ESP8266 web server to handle when the resource is not found
 void handleNotFound() {
@@ -25,6 +27,11 @@ void setupWifiManager () {
   wifiManager.autoConnect();  // Auto generated name ESP + ChipID
 
   Serial.println("Connected with Wi-Fi!");
+}
+
+int16_t getPortD () {
+  return ( digitalRead(D0) << 0 | digitalRead(D1) << 1 | digitalRead(D2) << 2 | digitalRead(D3) << 3 | digitalRead(D4) << 4 |
+           digitalRead(D5) << 5 | digitalRead(D6) << 6 | digitalRead(D7) << 7 | digitalRead(D8) << 8 );
 }
 
 // Setup of the web server ESP8266WebServer
@@ -45,7 +52,7 @@ void setupWebServer () {
 		 "<meta charset=\"utf-8\">"
 		 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
 		 "<script src=\"http://code.jquery.com/jquery-1.11.1.min.js\"></script>"
-		 "<script>var ip = \"" + WiFi.localIP().toString() + "\"; $(document).ready(function(){  $(\"#page\").load(\"" + greatWebInterface + "\"); });</script>"
+		 "<script>var ip = \"" + WiFi.localIP().toString() + "\"; var portD = " + getPortD() + "; $(document).ready(function(){  $(\"#page\").load(\"" + greatWebInterface + "\"); });</script>"
 		 "</head>"
 		 "<body>\n"
 		 "<div id=\"page\">Loading your great web user interface, please wait ...</div>\n"
@@ -57,18 +64,9 @@ void setupWebServer () {
     // Get parameters of the request to perform the required action of the user.
     // This method is an example to do this
     server->on("/action", []() {
-        String message = "Create some action here...\n\n";
-        message += "URI: ";
-        message += server->uri();
-        message += "\nMethod: ";
-        message += (server->method() == HTTP_GET) ? "GET" : "POST";
-        message += "\nArguments: ";
-        message += server->args();
-        message += "\n";
         int lightId = 0;
         boolean value = 0;
         for (uint8_t i = 0; i < server->args(); i++) {
-            message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
             if ( server->argName(i) == "light" ) {
               lightId = server->arg(i).toInt();
             }
@@ -76,9 +74,27 @@ void setupWebServer () {
               value = (server->arg(i) == "on" ? true : false);
             }
         }
-        server->send(200, "text/plain", message);
 
-        if ( lightId == 1 ) {
+        int bitPin = D0;
+        switch (lightId) {
+          case 1:
+            bitPin = D1;
+            break;
+           case 2:
+            bitPin = D2;
+             break;
+           case 3:
+            bitPin = D3;
+            break;
+           case 9:
+            bitPin = LED_BUILTIN;
+        }
+
+        digitalWrite(bitPin, !digitalRead(bitPin));
+
+/*        
+         
+      if ( lightId == 1 ) {
           if ( value ) {
             digitalWrite(LED_BUILTIN, LOW);
             digitalWrite(D1, HIGH);
@@ -88,7 +104,8 @@ void setupWebServer () {
             digitalWrite(D1, LOW);
           }
         }
-                
+*/
+        server->send(200, "text/plain", "ok");
     });
 
   // Handle resources that are not found.
@@ -103,8 +120,17 @@ void setupWebServer () {
 // Setup method that is called only once
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // Led is off!
+  pinMode(D0, OUTPUT);
   pinMode(D1, OUTPUT);
-
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  pinMode(D4, OUTPUT);
+  pinMode(D5, OUTPUT);
+  pinMode(D6, OUTPUT);
+  pinMode(D7, OUTPUT);
+  pinMode(D8, OUTPUT);
+  
   // Serial debugging
   Serial.begin(115200);
 

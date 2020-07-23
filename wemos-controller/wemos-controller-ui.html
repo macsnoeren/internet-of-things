@@ -6,10 +6,7 @@
     $('#ip').html(ip);
 
     $.getScript( "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js", function( data, textStatus, jqxhr ) {
-        console.log( data ); // Data returned
-        console.log( textStatus ); // Success
-        console.log( jqxhr.status ); // 200
-        console.log( "Load was performed." );
+        console.log( "Script is loaded" );
     });
 
     function toggleLight(id, element) {
@@ -47,8 +44,8 @@
 
 <h1>CONTROL YOUR LIGHTS</h1>
 <div class="custom-control custom-switch">
-    <input type="checkbox" data-role="flipswitch" name="light-1" id="light-1-switch" onchange="toggleLight(1, this);">
-    <label for="light-1-switch">Flip toggle switch checkbox:</label>
+    <input type="checkbox" data-role="flipswitch" name="light-1" id="light-1-switch" onchange="toggleLight(9, this);">
+    <label for="light-1-switch">Flip toggle the led:</label>
 </div>
 <div class="custom-control custom-switch">
     <input type="checkbox" data-role="flipswitch" name="light-2" id="light-2-switch" onchange="toggleLight(2, this);">
