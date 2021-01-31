@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-Button::Button(int buttonPin, void (*callback)(void)) {
+Button::Button(int buttonPin, void (*callback)(int buttonPin, int state)) {
     this->lastButtonState  = LOW; // the previous reading from the input pin
     this->lastDebounceTime = 0;    // the last time the output pin was toggled
     this->debounceDelay    = 50;   // the debounce time; increase if the output flickers
@@ -21,12 +21,9 @@ void Button::loop() {
   }
 
   if ((millis() - this->lastDebounceTime) > this->debounceDelay) {
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      if (buttonState == HIGH) {
-          this->callback();
-      }
+    if (reading != this->buttonState) {
+      this->buttonState = reading;
+      this->callback(this->buttonPin, buttonState);
     }
   }
 
