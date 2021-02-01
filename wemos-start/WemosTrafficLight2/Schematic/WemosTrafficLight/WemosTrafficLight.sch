@@ -1,0 +1,321 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "WemosTrafficLight"
+Date "2021-01-30"
+Rev "1.0"
+Comp "Avans University of Applied Sciences"
+Comment1 "Author: Maurice Snoeren"
+Comment2 "Course: Intelligent Wireless Sensor Networks"
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module:WeMos_D1_mini U?
+U 1 1 601562AD
+P 5050 3950
+F 0 "U?" H 4750 4750 50  0000 C CNN
+F 1 "WeMos_D1_mini" H 4750 4850 50  0000 C CNN
+F 2 "Module:WEMOS_D1_mini_light" H 5050 2800 50  0001 C CNN
+F 3 "https://wiki.wemos.cc/products:d1:d1_mini#documentation" H 3200 2800 50  0001 C CNN
+	1    5050 3950
+	1    0    0    -1  
+$EndComp
+Text Notes 5050 2250 0    50   ~ 0
+Use USB for power and programming
+$Comp
+L Device:LED D?
+U 1 1 60157628
+P 7300 2550
+F 0 "D?" H 7150 2600 50  0000 C CNN
+F 1 "RED" H 7293 2675 50  0000 C CNN
+F 2 "" H 7300 2550 50  0001 C CNN
+F 3 "~" H 7300 2550 50  0001 C CNN
+	1    7300 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 601587F5
+P 7300 2800
+F 0 "D?" H 7150 2850 50  0000 C CNN
+F 1 "YELLOW" H 7293 2925 50  0000 C CNN
+F 2 "" H 7300 2800 50  0001 C CNN
+F 3 "~" H 7300 2800 50  0001 C CNN
+	1    7300 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 60158BAE
+P 7300 3050
+F 0 "D?" H 7150 3100 50  0000 C CNN
+F 1 "GREEN" H 7293 3175 50  0000 C CNN
+F 2 "" H 7300 3050 50  0001 C CNN
+F 3 "~" H 7300 3050 50  0001 C CNN
+	1    7300 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6015F301
+P 7700 2550
+F 0 "R?" V 7650 2400 50  0000 C CNN
+F 1 "220" V 7584 2550 50  0000 C CNN
+F 2 "" V 7630 2550 50  0001 C CNN
+F 3 "~" H 7700 2550 50  0001 C CNN
+	1    7700 2550
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6015FAD4
+P 7700 2800
+F 0 "R?" V 7650 2650 50  0000 C CNN
+F 1 "220" V 7584 2800 50  0000 C CNN
+F 2 "" V 7630 2800 50  0001 C CNN
+F 3 "~" H 7700 2800 50  0001 C CNN
+	1    7700 2800
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6015FD72
+P 7700 3050
+F 0 "R?" V 7650 2900 50  0000 C CNN
+F 1 "220" V 7584 3050 50  0000 C CNN
+F 2 "" V 7630 3050 50  0001 C CNN
+F 3 "~" H 7700 3050 50  0001 C CNN
+	1    7700 3050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7450 2550 7550 2550
+Wire Wire Line
+	7550 2800 7450 2800
+Wire Wire Line
+	7450 3050 7550 3050
+Wire Wire Line
+	8100 3050 7850 3050
+Wire Wire Line
+	7850 2800 8100 2800
+Connection ~ 8100 2800
+Wire Wire Line
+	8100 2800 8100 3050
+Wire Wire Line
+	7850 2550 8100 2550
+Wire Wire Line
+	8100 2550 8100 2800
+Text Notes 5050 2150 0    50   ~ 0
+Output port as sink can take more current.
+$Comp
+L power:+3.3V #PWR?
+U 1 1 60161571
+P 8100 2350
+F 0 "#PWR?" H 8100 2200 50  0001 C CNN
+F 1 "+3.3V" H 8115 2523 50  0000 C CNN
+F 2 "" H 8100 2350 50  0001 C CNN
+F 3 "" H 8100 2350 50  0001 C CNN
+	1    8100 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60161F83
+P 5050 4800
+F 0 "#PWR?" H 5050 4550 50  0001 C CNN
+F 1 "GND" H 5055 4627 50  0000 C CNN
+F 2 "" H 5050 4800 50  0001 C CNN
+F 3 "" H 5050 4800 50  0001 C CNN
+	1    5050 4800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5050 4800 5050 4750
+$Comp
+L Switch:SW_Push SW?
+U 1 1 6017E775
+P 6700 4350
+F 0 "SW?" H 6500 4450 50  0000 C CNN
+F 1 "SW_Push" H 6950 4450 50  0000 C CNN
+F 2 "" H 6700 4550 50  0001 C CNN
+F 3 "~" H 6700 4550 50  0001 C CNN
+	1    6700 4350
+	1    0    0    -1  
+$EndComp
+Connection ~ 5050 4800
+Text Notes 5450 4550 0    50   ~ 0
+Enable Pull-Up on D6 and D7
+$Comp
+L Device:LED D?
+U 1 1 6018A116
+P 7300 3400
+F 0 "D?" H 7150 3450 50  0000 C CNN
+F 1 "RED" H 7293 3525 50  0000 C CNN
+F 2 "" H 7300 3400 50  0001 C CNN
+F 3 "~" H 7300 3400 50  0001 C CNN
+	1    7300 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 6018A20C
+P 7300 3650
+F 0 "D?" H 7150 3700 50  0000 C CNN
+F 1 "YELLOW" H 7293 3775 50  0000 C CNN
+F 2 "" H 7300 3650 50  0001 C CNN
+F 3 "~" H 7300 3650 50  0001 C CNN
+	1    7300 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 6018A216
+P 7300 3900
+F 0 "D?" H 7150 3950 50  0000 C CNN
+F 1 "GREEN" H 7293 4025 50  0000 C CNN
+F 2 "" H 7300 3900 50  0001 C CNN
+F 3 "~" H 7300 3900 50  0001 C CNN
+	1    7300 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6018A220
+P 7700 3400
+F 0 "R?" V 7650 3250 50  0000 C CNN
+F 1 "220" V 7584 3400 50  0000 C CNN
+F 2 "" V 7630 3400 50  0001 C CNN
+F 3 "~" H 7700 3400 50  0001 C CNN
+	1    7700 3400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6018A22A
+P 7700 3650
+F 0 "R?" V 7650 3500 50  0000 C CNN
+F 1 "220" V 7584 3650 50  0000 C CNN
+F 2 "" V 7630 3650 50  0001 C CNN
+F 3 "~" H 7700 3650 50  0001 C CNN
+	1    7700 3650
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 6018A234
+P 7700 3900
+F 0 "R?" V 7650 3750 50  0000 C CNN
+F 1 "220" V 7584 3900 50  0000 C CNN
+F 2 "" V 7630 3900 50  0001 C CNN
+F 3 "~" H 7700 3900 50  0001 C CNN
+	1    7700 3900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7450 3400 7550 3400
+Wire Wire Line
+	7550 3650 7450 3650
+Wire Wire Line
+	7450 3900 7550 3900
+Wire Wire Line
+	8100 3900 7850 3900
+Wire Wire Line
+	7850 3650 8100 3650
+Connection ~ 8100 3650
+Wire Wire Line
+	8100 3650 8100 3900
+Wire Wire Line
+	7850 3400 8100 3400
+Wire Wire Line
+	8100 3400 8100 3650
+Text Notes 7800 2650 0    50   ~ 0
+Light 1
+Text Notes 7800 3500 0    50   ~ 0
+Light 2
+Wire Wire Line
+	5150 2350 8100 2350
+Wire Wire Line
+	5150 2350 5150 3150
+Wire Wire Line
+	8100 2550 8100 2350
+Connection ~ 8100 2550
+Connection ~ 8100 2350
+Wire Wire Line
+	8100 3400 8100 3050
+Connection ~ 8100 3400
+Connection ~ 8100 3050
+Wire Wire Line
+	7150 2550 5550 2550
+Wire Wire Line
+	5550 2550 5550 3550
+Wire Wire Line
+	5550 3550 5450 3550
+Wire Wire Line
+	5450 3650 5600 3650
+Wire Wire Line
+	5600 3650 5600 2800
+Wire Wire Line
+	5600 2800 7150 2800
+Wire Wire Line
+	7150 3050 5650 3050
+Wire Wire Line
+	5650 3050 5650 3750
+Wire Wire Line
+	5650 3750 5450 3750
+Wire Wire Line
+	5450 3850 5700 3850
+Wire Wire Line
+	5700 3850 5700 3400
+Wire Wire Line
+	5700 3400 7150 3400
+Wire Wire Line
+	5750 3950 5750 3650
+Wire Wire Line
+	5750 3650 7150 3650
+Wire Wire Line
+	5450 3950 5750 3950
+Wire Wire Line
+	5450 4050 5800 4050
+Wire Wire Line
+	5800 4050 5800 3900
+Wire Wire Line
+	5800 3900 7150 3900
+$Comp
+L Switch:SW_Push SW?
+U 1 1 6019C66D
+P 6700 4150
+F 0 "SW?" H 6500 4250 50  0000 C CNN
+F 1 "SW_Push" H 6950 4250 50  0000 C CNN
+F 2 "" H 6700 4350 50  0001 C CNN
+F 3 "~" H 6700 4350 50  0001 C CNN
+	1    6700 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6900 4150 7300 4150
+Wire Wire Line
+	7300 4150 7300 4350
+Wire Wire Line
+	5050 4800 7300 4800
+Wire Wire Line
+	6900 4350 7300 4350
+Connection ~ 7300 4350
+Wire Wire Line
+	7300 4350 7300 4800
+Wire Wire Line
+	6500 4150 5450 4150
+Wire Wire Line
+	5450 4250 5800 4250
+Wire Wire Line
+	5800 4250 5800 4350
+Wire Wire Line
+	5800 4350 6500 4350
+Text Notes 6150 4100 0    50   ~ 0
+knop 1
+Text Notes 6150 4300 0    50   ~ 0
+knop 2
+$EndSCHEMATC
