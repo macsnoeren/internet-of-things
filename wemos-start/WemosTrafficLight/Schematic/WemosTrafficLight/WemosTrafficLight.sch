@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-EELAYER 29 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -159,4 +159,24 @@ F 3 "" H 5050 4800 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	5050 4800 5050 4750
+$Comp
+L Switch:SW_Push SW?
+U 1 1 6017E775
+P 6600 4250
+F 0 "SW?" H 6400 4350 50  0000 C CNN
+F 1 "SW_Push" H 6850 4350 50  0000 C CNN
+F 2 "" H 6600 4450 50  0001 C CNN
+F 3 "~" H 6600 4450 50  0001 C CNN
+	1    6600 4250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5450 4250 6400 4250
+Wire Wire Line
+	6800 4250 6800 4800
+Wire Wire Line
+	6800 4800 5050 4800
+Connection ~ 5050 4800
+Text Notes 6850 4300 0    50   ~ 0
+Enable Pull-Up on D7
 $EndSCHEMATC
