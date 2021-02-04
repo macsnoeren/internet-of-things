@@ -3,13 +3,62 @@
 #include <PubSubClient.h>
 
 #include <fsm.h>
-#include <fsmstates.h>
+#include <maurice.h>
 
 // Create the wifi-client to connect to the Internet
 WiFiClient client;
 
 // Create the MQTT client to connect to a MQTT Broker (server)
 PubSubClient mqtt;
+
+// Finite state machine
+enum FSM_STATES {
+  STATE_START,
+  STATE_LIGHT_1_GREEN,
+  STATE_LIGTH_1_ORANGE,
+  STATE_LIGTH_1_RED,
+  STATE_LIGHT_2_GREEN,
+  STATE_LIGTH_2_ORANGE,
+  STATE_LIGTH_2_RED,
+  STATE_OUT_OF_ORDER,
+  STATES_TOTAL
+};
+
+enum FSM_EVENTS {
+  EVENT_BUTTON_1,
+  EVENT_BUTTON_2,
+  EVENT_TIMER,
+  EVENT_STATE_EXECUTED, // Add this one always!
+  EVENTS_TOTAL
+};
+
+void preStart();
+void loopStart();
+void postStart();
+void preLight1Green();
+void loopLight1Green();
+void postLight1Green();
+void preLight1Orange();
+void loopLight1Orange();
+void postLight1Orange();
+void preLight1Red();
+void loopLight1Red();
+void postLight1Red();
+void preLight2Green();
+void loopLight2Green();
+void postLight2Green();
+void preLight2Orange();
+void loopLight2Orange();
+void postLight2Orange();
+void preLight2Red();
+void loopLight2Red();
+void postLight2Red();
+void preOutOfOrder();
+void loopOutOfOrder();
+void postOutOfOrder();
+
+//FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
+Maurice maurice(STATES_TOTAL, EVENTS_TOTAL);
 
 // Output
 constexpr int LIGHT_1_RED    = D0;
@@ -24,17 +73,7 @@ constexpr int BUTTON_1       = D6;
 constexpr int BUTTON_2       = D7;
 
 constexpr char MQTT_SERVER[] = "test.mosquitto.org";
-constexpr int    MQTT_PORT   = 1883;
-
-// State machine design pattern
-FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
-StateStart stateStart();
-StateLight1Green stateLight1Green();
-StateLight1Orange stateLight1Orange();
-StateLight1Red stateLight1Red();
-StateLight2Green stateLight2Green();
-StateLight2Orange stateLight2Orange();
-StateLight2Red stateLight2Red();
+constexpr int  MQTT_PORT     = 1883;
 
 // External Events!
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
@@ -55,10 +94,10 @@ void setup() {
   pinMode(LIGHT_2_GREEN,  OUTPUT);
 
   // Switch leds off
-  digitalWrite(LIGHT_1_RED,    HIGH);
+  digitalWrite(LIGHT_1_RED,    LOW);
   digitalWrite(LIGHT_1_ORANGE, HIGH);
   digitalWrite(LIGHT_1_GREEN,  HIGH);
-  digitalWrite(LIGHT_2_RED,    HIGH);
+  digitalWrite(LIGHT_2_RED,    LOW);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
 
@@ -69,6 +108,22 @@ void setup() {
   // For debugging purposes
   Serial.begin(9600);
   Serial.println();
+
+  // Add the state method to the FSM
+  maurice.addState(STATE_START,          preStart, loopStart, postStart);
+  maurice.addState(STATE_LIGHT_1_GREEN,  preLight1Green, loopLight1Green, postLight1Green);
+  maurice.addState(STATE_LIGTH_1_ORANGE, preLight1Orange, loopLight1Orange, postLight1Orange);
+  maurice.addState(STATE_LIGTH_1_RED,    preLight1Red, loopLight1Red, postLight1Red);
+  maurice.addState(STATE_LIGHT_1_GREEN,  preLight2Green, loopLight2Green, postLight2Green);
+  maurice.addState(STATE_LIGTH_1_ORANGE, preLight2Orange, loopLight2Orange, postLight2Orange);
+  maurice.addState(STATE_LIGTH_1_RED,    preLight2Red, loopLight2Red, postLight2Red);
+  maurice.addState(STATE_OUT_OF_ORDER,   preOutOfOrder, loopOutOfOrder, postOutOfOrder);
+
+  // Add the events to the FSM
+  maurice.addTransition(STATE_START, EVENT_STATE_EXECUTED, STATE_LIGHT_1_GREEN);
+  maurice.addTransition(STATE_LIGHT_1_GREEN, EVENT_TIMER, STATE_LIGTH_1_ORANGE);
+  maurice.addTransition(STATE_LIGTH_1_ORANGE, EVENT_TIMER, STATE_LIGTH_1_RED);
+  maurice.addTransition(STATE_LIGTH_1_RED, EVENT_TIMER, STATE_LIGHT_2_GREEN);
 
   // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
   WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
@@ -95,27 +150,114 @@ void setup() {
     Serial.println("MQTT NOT CONNECTED!");
   }
 
-  fsm.addState(STATE_START, (FSMState*) &stateStart);
-  fsm.addState(STATE_LIGHT_1_GREEN, &stateLight1Green);
-  fsm.addState(STATE_LIGTH_1_ORANGE, &stateLight1Orange);
-  fsm.addState(STATE_LIGTH_1_RED, &stateLight1Red);
-  fsm.addState(STATE_LIGHT_2_GREEN, &stateLight2Green);
-  fsm.addState(STATE_LIGTH_2_ORANGE, &stateLight2Orange);
-  fsm.addState(STATE_LIGTH_2_RED, &stateLight2Red);
-
-  fsm.addTransition(STATE_START, EVENT_STATE_EXECUTED, STATE_LIGHT_1_GREEN);
-  fsm.addTransition(STATE_LIGHT_1_GREEN, EVENT_BUTTON_2, STATE_LIGTH_1_ORANGE);
-  fsm.addTransition(STATE_LIGTH_1_ORANGE, EVENT_TIMER, STATE_LIGTH_1_RED);
-  fsm.addTransition(STATE_LIGTH_1_RED, EVENT_TIMER, STATE_LIGHT_2_GREEN);
-  fsm.addTransition(STATE_LIGHT_2_GREEN, EVENT_BUTTON_1, STATE_LIGTH_2_ORANGE);
-  fsm.addTransition(STATE_LIGTH_2_ORANGE, EVENT_TIMER, STATE_LIGTH_2_RED);
-  fsm.addTransition(STATE_LIGTH_2_RED, EVENT_TIMER, STATE_LIGHT_1_GREEN);
-
-  fsm.setup(STATE_START);
-
+  maurice.setup(STATE_START, EVENT_STATE_EXECUTED);
 }
 
 void loop() {
   mqtt.loop();
-  fsm.loop();
+  //fsm.loop();
+  maurice.loop();
+}
+
+void preStart() {
+    Serial.println("Pre Start");
+}
+
+
+void loopStart() {
+  Serial.println("Loop start");
+}
+
+void postStart() {
+  Serial.println("Post start");
+}
+
+void preLight1Green() {
+  Serial.println("Pre Ligt1Green");
+  digitalWrite(LIGHT_1_RED,    HIGH);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  LOW);
+  digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
+}
+
+void loopLight1Green() {
+  Serial.println("Loop Ligt1Green");
+}
+
+void postLight1Green() {
+  Serial.println("Post Ligt1Green");
+}
+
+void preLight1Orange() {
+
+}
+
+void loopLight1Orange() {
+
+}
+
+void postLight1Orange() {
+
+}
+
+void preLight1Red() {
+    
+}
+
+void loopLight1Red() {
+
+}
+
+void postLight1Red() {
+
+}
+
+void preLight2Green() {
+
+}
+
+void loopLight2Green() {
+
+}
+
+void postLight2Green() {
+
+}
+
+void preLight2Orange() {
+
+}
+
+void loopLight2Orange() {
+
+}
+
+void postLight2Orange() {
+
+}
+
+void preLight2Red() {
+
+}
+
+void loopLight2Red() {
+
+}
+
+void postLight2Red() {
+
+}
+
+void preOutOfOrder() {
+
+}
+
+void loopOutOfOrder() {
+
+}
+
+void postOutOfOrder() {
+
 }

@@ -1,9 +1,7 @@
 #include <fsm.h>
 
-FSM::FSM(int totalStates, int totalEvents) {
-    this->totalStates  = totalStates;
-    this->totalEvents  = totalEvents;
-    this->currentState = -1;
+FSM::FSM(int totalStates, int totalEvents) : totalStates(totalStates), totalEvents(totalEvents), currentState(-1) {
+    
 }
 
 void FSM::addTransition(int state, int event, int newState) {
@@ -12,9 +10,9 @@ void FSM::addTransition(int state, int event, int newState) {
     }
 }
 
-void FSM::addState(int s, FSMState *pState) {
+void FSM::addState(int s, void (*pre)(void), void (*loop)(void), void (*post)(void)) {
     if ( s < this->totalStates ) {
-        this->states[s] = pState;
+        this->states[s] = {pre, loop, post};
     }
 }
 
@@ -23,8 +21,8 @@ void FSM::raiseEvent(int e) {
         if ( this->transitions[currentState].find( e ) != this->transitions[currentState].end() ) { // Check if event exists for the current state!
             int newState = this->transitions[this->currentState][e]; // get the new state from the transition map
 
-            this->states[this->currentState]->post(); // Leaving current state
-            this->states[newState]->pre();            // Entering new state
+            this->states[this->currentState].post(); // Leaving current state
+            this->states[newState].pre();            // Entering new state
 
             this->currentState = newState;
         }
@@ -39,7 +37,6 @@ void FSM::setup(int state) {
 
 void FSM::loop () {
     if ( this->currentState != -1 &&  this->currentState < this->totalEvents ) {
-        this->states[this->currentState]->loop();
+        this->states[this->currentState].loop();
     }
 }
-
