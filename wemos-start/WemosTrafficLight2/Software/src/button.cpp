@@ -50,6 +50,14 @@ void Button::loop() {
 void Button::setPressedState(int pressed) {
     this->pressed = pressed;
 }
+
+void Button::setTimeLongDown(int time) {
+    this->timeLongDown = time;
+}
+
+void Button::setTimeDoubleClick(int time) {
+    this->timeDoubleClick = time;
+}
         
 void Button::stateDown() {
     if ( millis() - this->timer > this->timeLongDown ) {

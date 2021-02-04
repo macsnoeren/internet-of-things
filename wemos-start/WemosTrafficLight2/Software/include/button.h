@@ -44,7 +44,10 @@ class Button {
 
         void setup();
         void loop();
+
         void setPressedState(int pressed);
+        void setTimeLongDown(int time);
+        void setTimeDoubleClick(int time);
 
         void stateDown();
         void stateUp();
