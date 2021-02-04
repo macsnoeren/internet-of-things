@@ -2,7 +2,6 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include <fsm.h>
 #include <maurice.h>
 
 // Create the wifi-client to connect to the Internet
@@ -24,6 +23,7 @@ enum FSM_STATES {
   STATES_TOTAL
 };
 
+// Finite state machine events
 enum FSM_EVENTS {
   EVENT_BUTTON_1,
   EVENT_BUTTON_2,
@@ -32,6 +32,7 @@ enum FSM_EVENTS {
   EVENTS_TOTAL
 };
 
+// Finite state machine callback methods forward declarations
 void preStart();
 void loopStart();
 void postStart();
@@ -75,6 +76,9 @@ constexpr int BUTTON_2       = D7;
 constexpr char MQTT_SERVER[] = "test.mosquitto.org";
 constexpr int  MQTT_PORT     = 1883;
 
+// Timer method for timing purposes
+unsigned long timer;
+
 // External Events!
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
   String payload = "";
@@ -94,10 +98,10 @@ void setup() {
   pinMode(LIGHT_2_GREEN,  OUTPUT);
 
   // Switch leds off
-  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_RED,    HIGH);
   digitalWrite(LIGHT_1_ORANGE, HIGH);
   digitalWrite(LIGHT_1_GREEN,  HIGH);
-  digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_RED,    HIGH);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
 
@@ -107,7 +111,12 @@ void setup() {
 
   // For debugging purposes
   Serial.begin(9600);
-  Serial.println();
+  Serial.printf("\n\nSdk version: %s\n",   ESP.getSdkVersion());
+  Serial.printf("Core Version: %s\n",      ESP.getCoreVersion().c_str());
+  Serial.printf("Boot Version: %u\n",      ESP.getBootVersion());
+  Serial.printf("Boot Mode: %u\n",         ESP.getBootMode());
+  Serial.printf("CPU Frequency: %u MHz\n", ESP.getCpuFreqMHz());
+  Serial.printf("Reset reason: %s\n",      ESP.getResetReason().c_str());
 
   // Add the state method to the FSM
   maurice.addState(STATE_START,          preStart, loopStart, postStart);
@@ -160,9 +169,10 @@ void loop() {
 }
 
 void preStart() {
-    Serial.println("Pre Start");
+  Serial.println("Pre Start");
+  digitalWrite(LIGHT_1_RED,    LOW); // Ligth 1 and 2 turn to red
+  digitalWrite(LIGHT_2_RED,    LOW);
 }
-
 
 void loopStart() {
   Serial.println("Loop start");
@@ -180,10 +190,14 @@ void preLight1Green() {
   digitalWrite(LIGHT_2_RED,    LOW);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
+  timer = millis();
 }
 
 void loopLight1Green() {
   Serial.println("Loop Ligt1Green");
+  if ( millis() - timer > 5000 ) {
+    maurice.raiseEvent(EVENT_TIMER);
+  }
 }
 
 void postLight1Green() {
@@ -191,11 +205,13 @@ void postLight1Green() {
 }
 
 void preLight1Orange() {
-
+  timer = millis();
 }
 
 void loopLight1Orange() {
-
+  if ( millis() - timer > 5000 ) {
+    maurice.raiseEvent(EVENT_TIMER);
+  }
 }
 
 void postLight1Orange() {
