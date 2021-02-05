@@ -1,7 +1,8 @@
 #include "fsm.h"
-#include <Arduino.h>
 
-FSM::FSM(int totalStates, int totalEvents, int debug) : totalStates(totalStates), totalEvents(totalEvents), debug(debug) {
+using namespace std;
+
+FSM::FSM(int totalStates, int totalEvents, bool debug) : totalStates(totalStates), totalEvents(totalEvents), debugEnabled(debug) {
     this->states.resize(totalStates);
 }
 
@@ -13,7 +14,7 @@ void FSM::addTransition(int state, int event, int newState) {
 
 void FSM::addState(int s, std::function<void(void)> pre, std::function<void(void)> loop, std::function<void(void)> post) {
     if ( s < this->totalStates ) {
-        Serial.println("Added state: " + String(s));
+        this->debug("FSM: Added state: " + String(s));
         this->states[s].pre = pre;
         this->states[s].loop = loop;
         this->states[s].post = post;
@@ -21,11 +22,14 @@ void FSM::addState(int s, std::function<void(void)> pre, std::function<void(void
 }
 
 void FSM::raiseEvent(int e) {
+    this->debug("FSM: Event raised " + String(e));
+
     if ( this->currentState != -1 &&  e < this->totalEvents ) {
-        Serial.println("finding event: " + String(currentState) + " => " + String(e));
+        this->debug("FSM: finding event " + String(e) + " for state " + String(currentState));
+
         if ( this->transitions[currentState].find(e) != this->transitions[currentState].end() ) { // Check if event exists for the current state!
             int newState = this->transitions[this->currentState][e]; // get the new state from the transition map
-            Serial.println("found new state: " + String(newState));
+            this->debug("FSM: Found new state for event: " + String(newState));
 
             this->states[this->currentState].post(); // Leaving current state
             this->states[newState].pre();            // Entering new state
@@ -41,15 +45,30 @@ void FSM::setup(int state, int eventStateExecuted) {
         this->eventStateExecuted = eventStateExecuted;
         this->states[state].pre(); // Call the pre function!
     }
+    this->loopTiming = millis();
 }
 
 void FSM::loop () {
-    Serial.println("loop: " + String(this->currentState));
-    if ( this->currentState != -1 &&  this->currentState < this->totalEvents ) {
+    this->currentLoopTime = millis() - this->loopTiming;
+    this->debug("FSM: Loop time: " + String(this->currentLoopTime) + "ms");
+    this->loopTiming = millis(); // Restart timing calculation => TODO Above code takes also time!
+
+    this->debug("FSM: current state " + String(this->currentState));
+    if ( this->currentState != -1 &&  this->currentState < this->totalStates ) {
         this->states[this->currentState].loop();
         this->raiseEvent(this->eventStateExecuted);
 
     } else {
-        Serial.println("Could not execute loop!");
+        this->debug("FSM: Error in the FSM loop, deadlock!");
     }
+}
+
+void FSM::debug(String text) {
+    if ( this->debugEnabled ) {
+        Serial.println(text);
+    }
+}
+
+unsigned long FSM::getLoopTime() {
+    return this->currentLoopTime;
 }

@@ -28,6 +28,8 @@ enum FSM_EVENTS {
   EVENT_BUTTON_1,
   EVENT_BUTTON_2,
   EVENT_TIMER,
+  EVENT_OUT_OF_ORDER,
+  EVENT_START,
   EVENT_STATE_EXECUTED, // Add this one always!
   EVENTS_TOTAL
 };
@@ -58,8 +60,8 @@ void preOutOfOrder();
 void loopOutOfOrder();
 void postOutOfOrder();
 
-//FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
-FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
+//FSM
+FSM fsm(STATES_TOTAL, EVENTS_TOTAL, false);
 
 // Output
 constexpr int LIGHT_1_RED    = D0;
@@ -78,13 +80,29 @@ constexpr int  MQTT_PORT     = 1883;
 
 // Timer method for timing purposes
 unsigned long timer;
+unsigned long timerMQTT;
+String payload = "";
 
 // External Events!
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
-  String payload = "";
+  payload = "";
   for (unsigned int i=0;i<length;i++) {
     payload += (char)pl[i];
   }
+
+  if ( payload.equals("EVENT_OUT_OF_ORDER") ) {
+    fsm.raiseEvent(EVENT_OUT_OF_ORDER);
+
+  } else if ( payload.equals("EVENT_START") ) {
+    fsm.raiseEvent(EVENT_START);
+
+  } else if ( payload.equals("EVENT_BUTTON_1") ) {
+    fsm.raiseEvent(EVENT_BUTTON_1);
+
+  } else if ( payload.equals("EVENT_BUTTON_2") ) {
+    fsm.raiseEvent(EVENT_BUTTON_2);
+  }
+
   Serial.println("MQTT EVENT '" + String(topic) + "': " + payload);
 }
 
@@ -131,8 +149,23 @@ void setup() {
   // Add the events to the FSM
   fsm.addTransition(STATE_START, EVENT_STATE_EXECUTED, STATE_LIGHT_1_GREEN);
   fsm.addTransition(STATE_LIGHT_1_GREEN, EVENT_TIMER, STATE_LIGTH_1_ORANGE);
+  fsm.addTransition(STATE_LIGHT_1_GREEN, EVENT_BUTTON_2, STATE_LIGTH_1_ORANGE);
   fsm.addTransition(STATE_LIGTH_1_ORANGE, EVENT_TIMER, STATE_LIGTH_1_RED);
   fsm.addTransition(STATE_LIGTH_1_RED, EVENT_TIMER, STATE_LIGHT_2_GREEN);
+  fsm.addTransition(STATE_LIGHT_2_GREEN, EVENT_TIMER, STATE_LIGTH_2_ORANGE);
+  fsm.addTransition(STATE_LIGHT_2_GREEN, EVENT_BUTTON_1, STATE_LIGTH_2_ORANGE);
+  fsm.addTransition(STATE_LIGTH_2_ORANGE, EVENT_TIMER, STATE_LIGTH_2_RED);
+  fsm.addTransition(STATE_LIGTH_2_RED, EVENT_TIMER, STATE_LIGHT_1_GREEN);
+
+  fsm.addTransition(STATE_LIGHT_1_GREEN,  EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGHT_1_GREEN,  EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGTH_1_ORANGE, EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGTH_1_RED,    EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGHT_2_GREEN,  EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGHT_2_GREEN,  EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGTH_2_ORANGE, EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_LIGTH_2_RED,    EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
+  fsm.addTransition(STATE_OUT_OF_ORDER,   EVENT_START,        STATE_LIGHT_1_GREEN);
 
   // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
   WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
@@ -151,7 +184,7 @@ void setup() {
   mqtt.setCallback(callbackMQTT);
   mqtt.setServer(MQTT_SERVER, MQTT_PORT);
   mqtt.connect("wemos-client-1234");
-  mqtt.subscribe("wemos-event-1234");
+  mqtt.subscribe("iwsn-wemos-event");
 
   if ( mqtt.connected() ) {
     Serial.println("MQTT CONNECTED!");
@@ -160,45 +193,52 @@ void setup() {
   }
 
   fsm.setup(STATE_START, EVENT_STATE_EXECUTED);
-
-  delay(5000);
+  timerMQTT = millis();
 }
 
 // Ardiuno loop
-void loop() { 
-  mqtt.loop();
+void loop() {   
   fsm.loop();
+
+  if ( millis() - timerMQTT > 1000 ) {
+    payload = "{ \"id\": \"maurice\", \"looptiming\": " + String(fsm.getLoopTime()) + "}";
+    mqtt.publish("iwsn-wemos", payload.c_str());
+    timerMQTT = millis();
+  }
+
+  mqtt.loop();
 }
 
 void preStart() {
-  Serial.println("Pre Start");
   digitalWrite(LIGHT_1_RED,    LOW); // Ligth 1 and 2 turn to red
   digitalWrite(LIGHT_2_RED,    LOW);
 }
 
 void loopStart() {
-  Serial.println("Loop start");
 }
 
 void postStart() {
-  Serial.println("Post start");
 }
 
 void preLight1Green() {
-  Serial.println("Pre Ligt1Green");
   digitalWrite(LIGHT_1_RED,    HIGH);
   digitalWrite(LIGHT_1_ORANGE, HIGH);
   digitalWrite(LIGHT_1_GREEN,  LOW);
   digitalWrite(LIGHT_2_RED,    LOW);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
+  payload = "{ \"id\": \"maurice\", \"state\": \"light1 green\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
   timer = millis();
 }
 
 void loopLight1Green() {
-  Serial.println("Loop Ligt1Green");
-  if ( millis() - timer > 5000 ) {
+  if ( millis() - timer > 15000 ) {
     fsm.raiseEvent(EVENT_TIMER);
+  }
+
+  if ( digitalRead(BUTTON_2) == LOW ) {
+    fsm.raiseEvent(EVENT_BUTTON_2);
   }
 }
 
@@ -213,11 +253,13 @@ void preLight1Orange() {
   digitalWrite(LIGHT_2_RED,    LOW);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
+  payload = "{ \"id\": \"maurice\", \"state\": \"light1 orange\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
   timer = millis();
 }
 
 void loopLight1Orange() {
-  if ( millis() - timer > 5000 ) {
+  if ( millis() - timer > 2000 ) {
     fsm.raiseEvent(EVENT_TIMER);
   }
 }
@@ -233,11 +275,15 @@ void preLight1Red() {
   digitalWrite(LIGHT_2_RED,    LOW);
   digitalWrite(LIGHT_2_ORANGE, HIGH);
   digitalWrite(LIGHT_2_GREEN,  HIGH);
-
+  payload = "{ \"id\": \"maurice\", \"state\": \"light1 red\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
+  timer = millis();
 }
 
 void loopLight1Red() {
-
+  if ( millis() - timer > 2000 ) {
+    fsm.raiseEvent(EVENT_TIMER);
+  }
 }
 
 void postLight1Red() {
@@ -245,11 +291,25 @@ void postLight1Red() {
 }
 
 void preLight2Green() {
-
+  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    HIGH);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  LOW);
+  payload = "{ \"id\": \"maurice\", \"state\": \"light2 green\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
+  timer = millis();
 }
 
 void loopLight2Green() {
+  if ( millis() - timer > 15000 ) {
+    fsm.raiseEvent(EVENT_TIMER);
+  }
 
+  if ( digitalRead(BUTTON_1) == LOW ) {
+    fsm.raiseEvent(EVENT_BUTTON_1);
+  }
 }
 
 void postLight2Green() {
@@ -257,11 +317,21 @@ void postLight2Green() {
 }
 
 void preLight2Orange() {
-
+  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    HIGH);
+  digitalWrite(LIGHT_2_ORANGE, LOW);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
+  payload = "{ \"id\": \"maurice\", \"state\": \"light2 orange\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
+  timer = millis();
 }
 
 void loopLight2Orange() {
-
+  if ( millis() - timer > 2000 ) {
+    fsm.raiseEvent(EVENT_TIMER);
+  }
 }
 
 void postLight2Orange() {
@@ -269,11 +339,21 @@ void postLight2Orange() {
 }
 
 void preLight2Red() {
-
+  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
+  payload = "{ \"id\": \"maurice\", \"state\": \"light2 red\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
+  timer = millis();
 }
 
 void loopLight2Red() {
-
+  if ( millis() - timer > 2000 ) {
+    fsm.raiseEvent(EVENT_TIMER);
+  }
 }
 
 void postLight2Red() {
@@ -281,11 +361,23 @@ void postLight2Red() {
 }
 
 void preOutOfOrder() {
-
+  digitalWrite(LIGHT_1_RED,    HIGH);
+  digitalWrite(LIGHT_1_ORANGE, LOW);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    HIGH);
+  digitalWrite(LIGHT_2_ORANGE, LOW);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
+  payload = "{ \"id\": \"maurice\", \"state\": \"out of order\" }";
+  mqtt.publish("iwsn-wemos", payload.c_str());
+  timer = millis();
 }
 
 void loopOutOfOrder() {
-
+  if ( millis() - timer > 1000 ) {
+    digitalWrite(LIGHT_1_ORANGE, !digitalRead(LIGHT_1_ORANGE));
+    digitalWrite(LIGHT_2_ORANGE, !digitalRead(LIGHT_2_ORANGE));
+    timer = millis();
+  }
 }
 
 void postOutOfOrder() {
