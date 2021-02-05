@@ -2,7 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include <maurice.h>
+#include <fsm.h>
 
 // Create the wifi-client to connect to the Internet
 WiFiClient client;
@@ -59,7 +59,7 @@ void loopOutOfOrder();
 void postOutOfOrder();
 
 //FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
-Maurice maurice(STATES_TOTAL, EVENTS_TOTAL);
+FSM fsm(STATES_TOTAL, EVENTS_TOTAL);
 
 // Output
 constexpr int LIGHT_1_RED    = D0;
@@ -119,20 +119,20 @@ void setup() {
   Serial.printf("Reset reason: %s\n",      ESP.getResetReason().c_str());
 
   // Add the state method to the FSM
-  maurice.addState(STATE_START,          preStart, loopStart, postStart);
-  maurice.addState(STATE_LIGHT_1_GREEN,  preLight1Green, loopLight1Green, postLight1Green);
-  maurice.addState(STATE_LIGTH_1_ORANGE, preLight1Orange, loopLight1Orange, postLight1Orange);
-  maurice.addState(STATE_LIGTH_1_RED,    preLight1Red, loopLight1Red, postLight1Red);
-  maurice.addState(STATE_LIGHT_1_GREEN,  preLight2Green, loopLight2Green, postLight2Green);
-  maurice.addState(STATE_LIGTH_1_ORANGE, preLight2Orange, loopLight2Orange, postLight2Orange);
-  maurice.addState(STATE_LIGTH_1_RED,    preLight2Red, loopLight2Red, postLight2Red);
-  maurice.addState(STATE_OUT_OF_ORDER,   preOutOfOrder, loopOutOfOrder, postOutOfOrder);
+  fsm.addState(STATE_START,          preStart, loopStart, postStart);
+  fsm.addState(STATE_LIGHT_1_GREEN,  preLight1Green, loopLight1Green, postLight1Green);
+  fsm.addState(STATE_LIGTH_1_ORANGE, preLight1Orange, loopLight1Orange, postLight1Orange);
+  fsm.addState(STATE_LIGTH_1_RED,    preLight1Red, loopLight1Red, postLight1Red);
+  fsm.addState(STATE_LIGHT_2_GREEN,  preLight2Green, loopLight2Green, postLight2Green);
+  fsm.addState(STATE_LIGTH_2_ORANGE, preLight2Orange, loopLight2Orange, postLight2Orange);
+  fsm.addState(STATE_LIGTH_2_RED,    preLight2Red, loopLight2Red, postLight2Red);
+  fsm.addState(STATE_OUT_OF_ORDER,   preOutOfOrder, loopOutOfOrder, postOutOfOrder);
 
   // Add the events to the FSM
-  maurice.addTransition(STATE_START, EVENT_STATE_EXECUTED, STATE_LIGHT_1_GREEN);
-  maurice.addTransition(STATE_LIGHT_1_GREEN, EVENT_TIMER, STATE_LIGTH_1_ORANGE);
-  maurice.addTransition(STATE_LIGTH_1_ORANGE, EVENT_TIMER, STATE_LIGTH_1_RED);
-  maurice.addTransition(STATE_LIGTH_1_RED, EVENT_TIMER, STATE_LIGHT_2_GREEN);
+  fsm.addTransition(STATE_START, EVENT_STATE_EXECUTED, STATE_LIGHT_1_GREEN);
+  fsm.addTransition(STATE_LIGHT_1_GREEN, EVENT_TIMER, STATE_LIGTH_1_ORANGE);
+  fsm.addTransition(STATE_LIGTH_1_ORANGE, EVENT_TIMER, STATE_LIGTH_1_RED);
+  fsm.addTransition(STATE_LIGTH_1_RED, EVENT_TIMER, STATE_LIGHT_2_GREEN);
 
   // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
   WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
@@ -159,13 +159,15 @@ void setup() {
     Serial.println("MQTT NOT CONNECTED!");
   }
 
-  maurice.setup(STATE_START, EVENT_STATE_EXECUTED);
+  fsm.setup(STATE_START, EVENT_STATE_EXECUTED);
+
+  delay(5000);
 }
 
-void loop() {
+// Ardiuno loop
+void loop() { 
   mqtt.loop();
-  //fsm.loop();
-  maurice.loop();
+  fsm.loop();
 }
 
 void preStart() {
@@ -196,7 +198,7 @@ void preLight1Green() {
 void loopLight1Green() {
   Serial.println("Loop Ligt1Green");
   if ( millis() - timer > 5000 ) {
-    maurice.raiseEvent(EVENT_TIMER);
+    fsm.raiseEvent(EVENT_TIMER);
   }
 }
 
@@ -205,12 +207,18 @@ void postLight1Green() {
 }
 
 void preLight1Orange() {
+  digitalWrite(LIGHT_1_RED,    HIGH);
+  digitalWrite(LIGHT_1_ORANGE, LOW);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
   timer = millis();
 }
 
 void loopLight1Orange() {
   if ( millis() - timer > 5000 ) {
-    maurice.raiseEvent(EVENT_TIMER);
+    fsm.raiseEvent(EVENT_TIMER);
   }
 }
 
@@ -219,7 +227,13 @@ void postLight1Orange() {
 }
 
 void preLight1Red() {
-    
+  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
+  digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
+
 }
 
 void loopLight1Red() {

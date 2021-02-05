@@ -1,7 +1,8 @@
-#include <fsm.h>
+#include "fsm.h"
+#include <Arduino.h>
 
-FSM::FSM(int totalStates, int totalEvents) : totalStates(totalStates), totalEvents(totalEvents), currentState(-1) {
-    
+FSM::FSM(int totalStates, int totalEvents, int debug) : totalStates(totalStates), totalEvents(totalEvents), debug(debug) {
+    this->states.resize(totalStates);
 }
 
 void FSM::addTransition(int state, int event, int newState) {
@@ -10,16 +11,21 @@ void FSM::addTransition(int state, int event, int newState) {
     }
 }
 
-void FSM::addState(int s, void (*pre)(void), void (*loop)(void), void (*post)(void)) {
+void FSM::addState(int s, std::function<void(void)> pre, std::function<void(void)> loop, std::function<void(void)> post) {
     if ( s < this->totalStates ) {
-        this->states[s] = {pre, loop, post};
+        Serial.println("Added state: " + String(s));
+        this->states[s].pre = pre;
+        this->states[s].loop = loop;
+        this->states[s].post = post;
     }
 }
 
 void FSM::raiseEvent(int e) {
     if ( this->currentState != -1 &&  e < this->totalEvents ) {
-        if ( this->transitions[currentState].find( e ) != this->transitions[currentState].end() ) { // Check if event exists for the current state!
+        Serial.println("finding event: " + String(currentState) + " => " + String(e));
+        if ( this->transitions[currentState].find(e) != this->transitions[currentState].end() ) { // Check if event exists for the current state!
             int newState = this->transitions[this->currentState][e]; // get the new state from the transition map
+            Serial.println("found new state: " + String(newState));
 
             this->states[this->currentState].post(); // Leaving current state
             this->states[newState].pre();            // Entering new state
@@ -29,14 +35,21 @@ void FSM::raiseEvent(int e) {
     }
 }
 
-void FSM::setup(int state) {
-    if ( this->currentState == -1 && state < this->totalStates ) { // Only set start state if not set yet!
+void FSM::setup(int state, int eventStateExecuted) {
+    if ( this->currentState == -1 || state < this->totalStates ) { // Only set start state if not set yet!
         this->currentState = state;
+        this->eventStateExecuted = eventStateExecuted;
+        this->states[state].pre(); // Call the pre function!
     }
 }
 
 void FSM::loop () {
+    Serial.println("loop: " + String(this->currentState));
     if ( this->currentState != -1 &&  this->currentState < this->totalEvents ) {
         this->states[this->currentState].loop();
+        this->raiseEvent(this->eventStateExecuted);
+
+    } else {
+        Serial.println("Could not execute loop!");
     }
 }
