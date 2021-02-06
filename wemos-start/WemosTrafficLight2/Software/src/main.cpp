@@ -35,6 +35,7 @@ enum FSM_EVENTS {
   EVENT_TIMER,
   EVENT_OUT_OF_ORDER,
   EVENT_START,
+  EVENT_ERROR,
   EVENT_STATE_EXECUTED, // Add this one always!
   EVENTS_TOTAL
 };
@@ -172,30 +173,15 @@ void setup() {
   fsm.addTransition(STATE_LIGTH_2_RED,    EVENT_OUT_OF_ORDER, STATE_OUT_OF_ORDER);
   fsm.addTransition(STATE_OUT_OF_ORDER,   EVENT_START,        STATE_LIGHT_1_GREEN);
 
-  // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
-  WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
-  Serial.print("Setup Wi-Fi:");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.print("Connected:");
-  Serial.println(WiFi.localIP());
-
-  // Setup the MQTT client
-  mqtt.setClient(client);
-  mqtt.setBufferSize(2048); // override MQTT_MAX_PACKET_SIZE
-  mqtt.setCallback(callbackMQTT);
-  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
-  mqtt.connect("wemos-client-1234");
-  mqtt.subscribe("iwsn-wemos-event");
-
-  if ( mqtt.connected() ) {
-    Serial.println("MQTT CONNECTED!");
-  } else {
-    Serial.println("MQTT NOT CONNECTED!");
-  }
+  fsm.addTransition(STATE_LIGHT_1_GREEN,  EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGHT_1_GREEN,  EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGTH_1_ORANGE, EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGTH_1_RED,    EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGHT_2_GREEN,  EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGHT_2_GREEN,  EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGTH_2_ORANGE, EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_LIGTH_2_RED,    EVENT_ERROR, STATE_START);
+  fsm.addTransition(STATE_OUT_OF_ORDER,   EVENT_ERROR, STATE_START);
 
   fsm.setup(STATE_START, EVENT_STATE_EXECUTED);
   timerMQTT = millis();
@@ -205,7 +191,11 @@ void setup() {
 void loop() {   
   fsm.loop();
 
-  if ( millis() - timerMQTT > 1000 ) {
+  if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
+    fsm.raiseEvent(EVENT_ERROR);
+  }
+
+  if ( millis() - timerMQTT > 1000 ) { // Sent every second the loop timing of the wemos device
     payload = "{ \"id\": \"maurice\", \"looptiming\": " + String(fsm.getLoopTime()) + "}";
     mqtt.publish("iwsn-wemos", payload.c_str());
     timerMQTT = millis();
@@ -215,11 +205,46 @@ void loop() {
 }
 
 void preStart() {
-  digitalWrite(LIGHT_1_RED,    LOW); // Ligth 1 and 2 turn to red
+  digitalWrite(LIGHT_1_RED,    LOW);
+  digitalWrite(LIGHT_1_ORANGE, HIGH);
+  digitalWrite(LIGHT_1_GREEN,  HIGH);
   digitalWrite(LIGHT_2_RED,    LOW);
+  digitalWrite(LIGHT_2_ORANGE, HIGH);
+  digitalWrite(LIGHT_2_GREEN,  HIGH);
 }
 
 void loopStart() {
+  if ( WiFi.status() != WL_CONNECTED ) { // Check the wifi connection
+    WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+    Serial.print("Setup Wi-Fi:");
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println();
+    Serial.print("Connected:");
+    Serial.println(WiFi.localIP());
+    payload = "{ \"id\": \"maurice\", \"ip\": \"" + WiFi.localIP().toString() + "\"}";
+    mqtt.publish("iwsn-wemos", payload.c_str());
+  }
+  
+  if ( !mqtt.connected() ) { // Check the mqtt connection
+    mqtt.setClient(client); // Setup the MQTT client
+    mqtt.setBufferSize(2048); // override MQTT_MAX_PACKET_SIZE
+    mqtt.setCallback(callbackMQTT);
+    mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+    mqtt.connect("iwsn-wemos-client-maurice");
+    mqtt.subscribe("iwsn-wemos-event");
+
+    if ( mqtt.connected() ) {
+      Serial.println("MQTT CONNECTED!");
+      payload = "{ \"id\": \"maurice\", \"mqtt\": \"iwsn-wemos-client-maurice\"}";
+      mqtt.publish("iwsn-wemos", payload.c_str());
+  
+    } else {
+      Serial.println("MQTT NOT CONNECTED!");
+    }
+  }
 }
 
 void postStart() {
