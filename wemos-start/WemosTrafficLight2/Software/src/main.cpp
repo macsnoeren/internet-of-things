@@ -1,3 +1,8 @@
+// Avans University of Applied Sciences (Avans Hogeschool)
+// Module: Intelligent Wireless Sensor Netwerken (IWSN)
+// Author: Maurice Snoeren
+// Date  : 05-02-2021
+//
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>

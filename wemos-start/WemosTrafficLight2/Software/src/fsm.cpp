@@ -1,6 +1,10 @@
-#include "fsm.h"
+// Avans University of Applied Sciences (Avans Hogeschool)
+// Module: Intelligent Wireless Sensor Netwerken (IWSN)
+// Author: Maurice Snoeren
+// Date  : 05-02-2021
+//
 
-using namespace std;
+#include <fsm.h>
 
 FSM::FSM(int totalStates, int totalEvents, bool debug) : totalStates(totalStates), totalEvents(totalEvents), debugEnabled(debug) {
     this->states.resize(totalStates);
@@ -8,6 +12,7 @@ FSM::FSM(int totalStates, int totalEvents, bool debug) : totalStates(totalStates
 
 void FSM::addTransition(int state, int event, int newState) {
     if ( state < this->totalStates && event < this->totalEvents ) { 
+        this->debug("FSM: Added transition for state " + String(state) + " and event " + String(event) + ": " + String(newState));
         this->transitions[state][event] = newState;
     }
 }
