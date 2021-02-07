@@ -6,6 +6,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #include <fsm.h>
 
@@ -88,12 +89,25 @@ constexpr int  MQTT_PORT     = 1883;
 unsigned long timer;
 unsigned long timerMQTT;
 String payload = "";
+StaticJsonDocument<256> jsondoc;
 
 // External Events!
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
   payload = "";
   for (unsigned int i=0;i<length;i++) {
     payload += (char)pl[i];
+  }
+
+  // Enable also a JSON interface
+  DeserializationError err = deserializeJson(jsondoc, payload.c_str());
+  if (err) {
+    Serial.println("NO JSON: " + String(err.c_str()));
+    Serial.println("Parsing as plain text!");
+
+  } else {
+    String event = jsondoc["event"];
+    Serial.println("JSON EVENT: " + event);
+    payload = event;
   }
 
   if ( payload.equals("EVENT_OUT_OF_ORDER") ) {
@@ -212,7 +226,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   mqtt.setClient(client); // Setup the MQTT client
-  mqtt.setBufferSize(2048); // override MQTT_MAX_PACKET_SIZE
+  mqtt.setBufferSize(256); // override MQTT_MAX_PACKET_SIZE
   mqtt.setCallback(callbackMQTT);
   mqtt.setServer(MQTT_SERVER, MQTT_PORT);
   connectMQTT();
