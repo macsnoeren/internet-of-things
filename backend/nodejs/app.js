@@ -1,5 +1,5 @@
 const express = require('express');
-const parser  = require('body-parser');
+const bodyParser  = require('body-parser');
 const mongoose = require('mongoose');
 
 const config      = require('./config');
@@ -21,13 +21,10 @@ mongoose.connect(config.mongodb.host, {
     throw error;
 });
 
-app.use(parser.urlencoded({
-	extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ type: 'application/json' })); // Bug fixed: Angular app requires this to be parsed correcty!
 
-app.use(parser.json());
-
-app.set('config', config);
+//app.set('config', config);
 
 app.all('*', function(req, res, next) {
 	console.log(`[${new Date().toISOString()}] [${req.method}] ${req.url} has been invoked!`)

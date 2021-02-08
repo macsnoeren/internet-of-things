@@ -130,15 +130,13 @@ void connectMQTT() {
   while (!mqtt.connected()) {
     mqtt.connect("iwsn-wemos-client-maurice");
     mqtt.subscribe("iwsn-wemos-event");
+    delay(1000);
     if ( mqtt.connected() ) {
       Serial.println("MQTT CONNECTED!");
-      payload = "{ \"id\": \"maurice\", \"mqtt\": \"iwsn-wemos-client-maurice\", \"ip\": \"" + WiFi.localIP().toString() + "\"}";
-      mqtt.publish("iwsn-wemos", payload.c_str());
 
     } else {
       Serial.println("MQTT NOT CONNECTED!");
     }
-    delay(500);
   }
 }
 
@@ -239,13 +237,14 @@ void setup() {
 void loop() {   
   fsm.loop();
 
-  if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
-    fsm.raiseEvent(EVENT_ERROR);
-  }
-
   if ( millis() - timerMQTT > 5000 ) { // Sent every five second the loop timing of the wemos device
     payload = "{ \"id\": \"maurice\", \"looptiming\": " + String(fsm.getLoopTime()) + "}";
     mqtt.publish("iwsn-wemos", payload.c_str());
+
+    if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
+      fsm.raiseEvent(EVENT_ERROR);
+    }
+
     timerMQTT = millis();
   }
 
@@ -265,8 +264,13 @@ void loopStart() {
   if ( WiFi.status() == WL_CONNECTED ) {
     if ( !mqtt.connected() ) {
       connectMQTT();
+
+    } else {
+      payload = "{ \"id\": \"maurice\", \"mqtt\": \"iwsn-wemos-client-maurice\", \"ip\": \"" + WiFi.localIP().toString() + "\"}";
+      mqtt.publish("iwsn-wemos", payload.c_str());
+      fsm.raiseEvent(EVENT_START);
     }
-    fsm.raiseEvent(EVENT_START);
+    
 
   } else {
     Serial.println("WiFi reconnection");
