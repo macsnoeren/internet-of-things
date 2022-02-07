@@ -1,10 +1,10 @@
 # Workshop Finite State Machine
 Welcome at the github project that supports the workshop Finite State Machines (FSM). During this workshop we zoom into the embedded software development. Based on an Internet-Of-Thing (IoT) platform, the FSM design pattern is explained. This embedded platform will be made available during the workshop itself.
 
-# Assignment: Traffic Light One
+# Project: Traffic Light One
 The project we are going to implement is de Traffic Light IoT. We are going to create one traffic light with the Wemos D1 Mini embedded system and one switch. This embedded device connects with a Wi-Fi access point and therefore communicate with some REST backends or MQTT. So, you will not only learn how to make robust embedded software! You will also learn to program a full IoT software stack!
 
-[tlo]()
+<img src="https://github.com/macsnoeren/internet-of-things/raw/development/workshop-fsm/images/traffic_light_one.jpg" width="250px">
 
 ## Hardware
 * ESP8266 D1 Mini
@@ -35,4 +35,21 @@ To transit from one state to another, the following events have been defined:
 5. START
 6. ERROR
 
-# Assignment: Impl
+# 1. Assignment: Create the project hardware
+Wire the wemos to the leds and the switch using the wires.
+
+# 2. Assignment: Wemos Hello World!
+First we need to check if the hardware is correctly working. Create your first program and setup the hardare. Flash the leds of the Wemos.
+
+# 3. Assignment: FSM software design
+How are you going to implement the FSM into an embedded controller? Are you going to use class of not?
+
+# 4. Assignment: Implement the FSM software
+Implement and test the FSM software.
+
+# 5. Assignment: Implement the FSM Traffic Light One
+Implement the final software of the FSM Traffic Light One.
+
+# 6. Assignment: Implement REST
+
+# 7. Assignment: Implement MQTT
