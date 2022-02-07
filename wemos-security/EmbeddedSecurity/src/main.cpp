@@ -20,6 +20,9 @@ void setup() {
   
   setup_ecc();
   
+  String number = "0";
+  double a = std::strtod(number.c_str(), NULL);
+
 }
 
 void loop() {
