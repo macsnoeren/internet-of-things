@@ -14,3 +14,4 @@ The project we are going to implement is de Traffic Light IoT. We are going to c
 * A bunch of wires
 
 Please see the [schematic](https://github.com/macsnoeren/internet-of-things/blob/development/workshop-fsm/Schematic%20Traffic%20Light%20Project.pdf) to make the correct wiring with the switches and leds.
+
