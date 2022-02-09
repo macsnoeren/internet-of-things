@@ -82,8 +82,9 @@ constexpr int LIGHT_2_GREEN  = D5;
 constexpr int BUTTON_1       = D6;
 constexpr int BUTTON_2       = D7;
 
-constexpr char MQTT_SERVER[] = "test.mosquitto.org";
-constexpr int  MQTT_PORT     = 1883;
+//constexpr char MQTT_SERVER[] = "test.mosquitto.org";
+constexpr char MQTT_SERVER[] = "sendlab.nl";
+constexpr int  MQTT_PORT     = 11883;
 
 // Timer method for timing purposes
 unsigned long timer;
@@ -128,8 +129,8 @@ void callbackMQTT(char* topic, byte* pl, unsigned int length) {
 
 void connectMQTT() {
   while (!mqtt.connected()) {
-    mqtt.connect("iwsn-wemos-client-maurice");
-    mqtt.subscribe("iwsn-wemos-event");
+    mqtt.connect("iwsn-wemos-client-maurice", "test", "test");
+    mqtt.subscribe("test/iwsn-wemos-event");
     delay(1000);
     if ( mqtt.connected() ) {
       Serial.println("MQTT CONNECTED!");
@@ -163,7 +164,7 @@ void setup() {
 
   // For debugging purposes
   Serial.begin(9600);
-  Serial.printf("\n\nSdk version: %s\n",   ESP.getSdkVersion());
+  Serial.printf_P(PSTR("\n\nSdk version: %s\n"),   ESP.getSdkVersion()); // Reduce memory footprint
   Serial.printf("Core Version: %s\n",      ESP.getCoreVersion().c_str());
   Serial.printf("Boot Version: %u\n",      ESP.getBootVersion());
   Serial.printf("Boot Mode: %u\n",         ESP.getBootMode());
@@ -211,7 +212,8 @@ void setup() {
   fsm.addTransition(STATE_LIGTH_2_RED,    EVENT_ERROR, STATE_START);
   fsm.addTransition(STATE_OUT_OF_ORDER,   EVENT_ERROR, STATE_START);
 
-  WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+  //WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+  WiFi.begin("LA134-2016", "MAD2016TI");
   Serial.print("Setup Wi-Fi:");
   while ( WiFi.status() != WL_CONNECTED ) {
       delay(500);
@@ -239,7 +241,7 @@ void loop() {
 
   if ( millis() - timerMQTT > 5000 ) { // Sent every five second the loop timing of the wemos device
     payload = "{ \"id\": \"maurice\", \"looptiming\": " + String(fsm.getLoopTime()) + "}";
-    mqtt.publish("iwsn-wemos", payload.c_str());
+    mqtt.publish("test/iwsn-wemos", payload.c_str());
 
     if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
       fsm.raiseEvent(EVENT_ERROR);

@@ -235,7 +235,8 @@ void setup() {
   Serial.begin(9600);
 
   // Access to Internet
-  WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
+  WiFi.begin("LA134-2016", "MAD2016TI");
+  //WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect with the Wi-Fi
   Serial.print("Connecting with Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -252,8 +253,9 @@ void setup() {
   mqtt.setClient(client);
   mqtt.setBufferSize(2048); // override MQTT_MAX_PACKET_SIZE
   mqtt.setCallback(mqtt_callback);
-  mqtt.setServer("test.mosquitto.org", 1883);
-  mqtt.connect("wemos-client-1234");
+  //mqtt.setServer("test.mosquitto.org", 1883);
+  mqtt.setServer("sendlab.nl", 11883);
+  mqtt.connect("wemos-client-1234", "test", "test");
   if ( mqtt.connected() ) {
     Serial.println("MQTT CONNECTED!");
   } else {
