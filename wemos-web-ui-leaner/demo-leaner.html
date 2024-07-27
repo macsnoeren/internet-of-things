@@ -13,8 +13,7 @@
     function toggleLight(id, element) {
         //alert("Light: " + id + ": " + element.checked);
         //element.checked = true;
-        $('#action').load("http://192.168.1.62/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
-        alert(localURL);
+        $('#action').load("http://" + ip + "/action?light=" + id + "&value=" + (element.checked ? "on" : "off"));
     }
 </script>
 
